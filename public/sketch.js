@@ -1,30 +1,17 @@
-// UNSENT - P5.js Sketch
-// Visual confessions with interactive envelopes
+// UNSENT - P5.js Sketch 
 
 let confessions = [];
 let envelopes = [];
-let mainEnvelopeImg;
-let smallEnvelopeImgs = [];
 
-function preload() {
-  // Load main envelope image
-  mainEnvelopeImg = loadImage('writing_envelope.jpg');
-  
-  // Load all small envelope images
-  smallEnvelopeImgs = [
-    loadImage('envelope_a.png'),
-    loadImage('envelope_2a.png'),
-    loadImage('envelope_3.jpg'),
-    loadImage('envelope_4.jpg'),
-    loadImage('envelope_5.jpg'),
-    loadImage('envelope_6a.png'),
-    loadImage('envelope_7a.png'),
-    loadImage('envelope_8a.png'),
-    loadImage('envelope_9a.png'),
-    loadImage('envelope_10a.png'),
-    loadImage('envelope_11a.png')
-  ];
-}
+// Envelope colors for drawing
+const envelopeColors = [
+  '#f8c8dc', // Pink
+  '#d32f2f', // Red
+  '#82b5d9', // Blue
+  '#e6a945', // Yellow/Mustard
+  '#c9a87c', // Cork/Tan
+  '#ffc0cb'  // Light Pink
+];
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -46,24 +33,19 @@ function draw() {
     push();
     translate(env.x, env.y);
     rotate(env.rotation);
-    
-    // Draw envelope image
-    imageMode(CENTER);
-    image(env.img, 0, 0, env.size, env.size * 0.66);
-    
+    drawEnvelope(0, 0, env.size, env.color, env.hasHeart);
     pop();
   }
   
   // Draw main envelope in center 
   push();
-  imageMode(CENTER);
-  // Main envelope size: 420 x 300 
-  image(mainEnvelopeImg, width/2, height/2, 420, 300);
+  drawMainEnvelope(width/2, height/2, 420, 300);
   pop();
 }
 
 function drawTitle() {
   push();
+  // Handwritten cursive font
   textFont('Brush Script MT, cursive');
   textSize(90);
   textStyle(NORMAL);
@@ -72,6 +54,97 @@ function drawTitle() {
   strokeWeight(1);
   textAlign(LEFT);
   text('Unsent', 50, 100);
+  
+  // Add decorative line
+  strokeWeight(2);
+  line(220, 70, 320, 50);
+  pop();
+}
+
+function drawEnvelope(x, y, size, color, hasHeart) {
+  let w = size;
+  let h = size * 0.66;
+  
+  push();
+  rectMode(CENTER);
+  
+  // Envelope body
+  fill(color);
+  stroke(0, 50);
+  strokeWeight(1);
+  rect(x, y, w, h, 3);
+  
+  // Envelope flap
+  fill(red(color) - 20, green(color) - 20, blue(color) - 20);
+  triangle(
+    x - w/2, y - h/2,
+    x + w/2, y - h/2,
+    x, y
+  );
+  
+  // Optional heart seal
+  if (hasHeart) {
+    fill('#d32f2f');
+    noStroke();
+    let heartSize = size * 0.12;
+    drawHeart(x, y, heartSize);
+  }
+  
+  // Fold lines
+  stroke(0, 30);
+  strokeWeight(0.5);
+  line(x - w/2, y - h/2, x, y);
+  line(x + w/2, y - h/2, x, y);
+  
+  pop();
+}
+
+function drawMainEnvelope(x, y, w, h) {
+  push();
+  rectMode(CENTER);
+  
+  // Main envelope body - cream color
+  fill('#e8dcc4');
+  stroke(0, 50);
+  strokeWeight(2);
+  rect(x, y, w, h, 5);
+  
+  // Envelope flap (open)
+  fill('#d4c4a8');
+  quad(
+    x - w/2, y - h/2,
+    x + w/2, y - h/2,
+    x + w/3, y - h/2 - 100,
+    x - w/3, y - h/2 - 100
+  );
+  
+  fill('#c4b498');
+  triangle(
+    x - w/2, y - h/2,
+    x, y - h/4,
+    x - w/2 + 40, y - h/2
+  );
+  triangle(
+    x + w/2, y - h/2,
+    x, y - h/4,
+    x + w/2 - 40, y - h/2
+  );
+  
+  pop();
+}
+
+function drawHeart(x, y, size) {
+  push();
+  translate(x, y);
+  beginShape();
+  for (let a = 0; a < TWO_PI; a += 0.1) {
+    let r = size * (sin(a) * sqrt(abs(cos(a))) / (sin(a) + 1.4) - 2 * sin(a) + 2);
+    let sx = r * cos(a);
+    let sy = -r * sin(a);
+    vertex(sx, sy);
+  }
+  endShape(CLOSE);
+  pop();
 }
 
 function addEnvelope(confession) {
@@ -82,7 +155,7 @@ function addEnvelope(confession) {
   
   let x, y;
   let attempts = 0;
-  
+
   do {
     x = random(margin, width - margin);
     y = random(margin, height - margin);
@@ -92,10 +165,11 @@ function addEnvelope(confession) {
   let envelope = {
     x: x,
     y: y,
-    size: random(70, 110), // Same size range as before
+    color: random(envelopeColors),
+    size: random(70, 110),
     rotation: random(-PI/8, PI/8),
-    confession: confession,
-    img: random(smallEnvelopeImgs) // Pick random envelope image
+    hasHeart: random() < 0.2, // 20% chance of heart
+    confession: confession
   };
   
   envelopes.push(envelope);
@@ -145,7 +219,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// function to be called from app.js when new confession arrives
+// Expose function to be called from app.js when new confession arrives
 window.onNewConfession = function(confession) {
   confessions.push(confession);
   addEnvelope(confession);
