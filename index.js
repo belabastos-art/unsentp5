@@ -24,10 +24,10 @@ class GistAdapter {
                     'Accept': 'application/vnd.github.v3+json'
                 }
             });
-            
+
             const gist = await response.json();
             const content = gist.files[this.filename]?.content;
-            
+
             return content ? JSON.parse(content) : null;
         } catch (error) {
             console.error('Error reading from Gist:', error);
@@ -60,11 +60,13 @@ class GistAdapter {
 
 // Connect to database with custom Gist adapter
 let defaultData = { confessionsData: [] };
+
 let adapter = new GistAdapter(
     process.env.GIST_ID,
     process.env.GIST_TOKEN,
     process.env.GIST_FILENAME
 );
+
 let db = new Low(adapter, defaultData);
 
 // Initialize/read database
@@ -82,11 +84,11 @@ app.use(express.json());
 // Route for posting new data
 app.post('/newData', async (request, response) => {
     console.log('POST /newData:', request.body);
-    
+
     let obj = { msg: request.body.msg };
     db.data.confessionsData.push(obj);
     await db.write();
-    
+
     response.json({ task: "success" });
 });
 
@@ -99,6 +101,7 @@ app.get('/getData', async (request, response) => {
 // Initialize HTTP server
 let server = createServer(app);
 let port = process.env.PORT || 3000;
+
 server.listen(port, () => {
     console.log('Server listening at port:', port);
 });
