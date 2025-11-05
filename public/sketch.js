@@ -66,13 +66,15 @@ function addEnvelope(confession) {
     x = random(margin, width - margin);
     y = random(margin, height - margin);
     attempts++;
-  } while (dist(x, y, centerX, centerY) < minDist && attempts < 50);
+  } while ((dist(x, y, centerX, centerY) < minDist || 
+           (x < 500 && y < 280)) && 
+           attempts < 50);
   
   let envelope = {
     x: x,
     y: y,
-    size: random(70, 110),
-    rotation: random(-PI/8, PI/8),
+    size: random(100,100),
+   rotation: radians(random(-30, 30)),
     confession: confession,
     img: random(smallEnvelopeImgs)
   };
