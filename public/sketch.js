@@ -73,7 +73,7 @@ function addEnvelope(confession) {
   let envelope = {
     x: x,
     y: y,
-    size: random(100,100),
+    size: 100,
    rotation: radians(random(-30, 30)),
     confession: confession,
     img: random(smallEnvelopeImgs)
@@ -115,3 +115,4 @@ window.onNewConfession = function(confession) {
   confessions.push(confession);
   addEnvelope(confession);
 };
+
